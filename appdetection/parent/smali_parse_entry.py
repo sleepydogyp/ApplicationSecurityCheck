@@ -3,7 +3,7 @@
 import logging
 import os
 
-from smali_parser import SmaliParser
+from detectItemsEntry import SmaliParser
 
 logging.basicConfig(
     filename='app.log',

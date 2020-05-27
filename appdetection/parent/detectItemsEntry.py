@@ -3,10 +3,11 @@
 '''
 parse smali file 
 '''
+
 import logging
 
-import appdetection.parent.vulnerabilityscan.contentProviderDirTraversal \
-    as ContentProviderDirTraversal
+
+from item_contentProviderDirTraversal import ContentProviderDirTraversal
 
 logging.basicConfig(
     filename='app.log',
@@ -23,24 +24,31 @@ class SmaliParser:
     def parseSmaliFile(self, smaliLines):
         isMethod = False
         for line in smaliLines:
-            logging.info('line: ' + line)
+            if line == '\n':
+                continue
             if line.startswith('.class'):
                 temp = line.split(' ')
                 self.className = temp[len(temp) - 1].split(';')[0]
                 logging.info('className: ' + self.className)
             elif line.startswith('.method'):
+                isMethod = True
                 temp = line.split(' ')
                 self.currentMethod = temp[len(temp) - 1].split('(')[0]
                 logging.info('currentMethod: ' + self.currentMethod)
-                isMethod = True
+                # Content Provider目录遍历漏洞
+                if self.currentMethod == 'openFile':
+                    ContentProviderDirTraversal().check(self.className, self.currentMethod, temp[len(temp) - 1])
                 continue
             elif line == '.end method':
                 isMethod = False
                 self.currentMethod = ''
             elif isMethod:
-                self.detect(self, line)
+                self.detect(line)
 
     def detect(self, statement):
-        # Content Provider目录遍历漏洞
-        ContentProviderDirTraversal().check(self.className, self.currentMethod, statement)
+        # invoke语句, invoke-direct, invoke-virtual, invoke-static
+        if statement.startswith('invoke-'):
+            temp = statement.split(' ')
+            invokeStatement = temp[len(temp) - 1]
+            logging.info(invokeStatement)
         

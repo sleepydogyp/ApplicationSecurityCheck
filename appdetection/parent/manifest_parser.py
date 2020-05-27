@@ -2,6 +2,8 @@
 
 import logging
 
+from appdetection.parent.data.appBaseInfo import AppBaseData
+
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
@@ -17,11 +19,9 @@ namespace = '{http://schemas.android.com/apk/res/android}'
 
 def parseManifest(filePath):
     if (filePath.endswith('.xml')):
-        manifestInfos = {}
-
         elementTree = ET.parse(filePath)
         root = elementTree.getroot()
-        manifestInfos['packageName'] = root.get('package')
+        AppBaseData.packageName = root.get('package')
         uses_permissions = set()
         permissions = set()
         for child in root:
@@ -43,14 +43,14 @@ def parseManifest(filePath):
                 '''
                 # debuggable
                 if child.get('debuggable') in "true":
-                    manifestInfos['debuggable'] = True
+                    AppBaseData.debuggable = True
                 else:
-                    manifestInfos['debuggable'] = False
+                    AppBaseData.debuggable = False
                 # allowBackup
                 if child.get('allowBackup') in "false":
-                    manifestInfos['allowBackup'] = False
+                    AppBaseData.allowBackup = False
                 else:
-                    manifestInfos['allowBackup'] = True
+                    AppBaseData.allowBackup = True
 
                 # four components and exported components
                 exportedActivities = set()
@@ -69,7 +69,7 @@ def parseManifest(filePath):
                             exportedActivities.add(activityName)
                         if isMainActivity(component):
                             # mainActivity
-                            manifestInfos['mainActivity'] = activityName
+                            AppBaseData.mainActivity = activityName
                     elif (component.tag == 'service'):
                         serviceName = component.attrib[namespace + 'name']
                         services.add(serviceName)
@@ -79,26 +79,24 @@ def parseManifest(filePath):
                         receiverName = component.attrib[namespace + 'name']
                         receivers.add(receiverName)
                         if isExported(component):
-                            exportedReceivers(receiverName)
+                            exportedReceivers.add(receiverName)
                     elif (component.tag == 'provider'):
                         providerName = component.attrib[namespace + 'name']
                         providers.add(providerName)
                         if isExported(component):
-                            exportedProviders(providerName)
-                manifestInfos['activities'] = activities
-                manifestInfos['services'] = services
-                manifestInfos['receivers'] = receivers
-                manifestInfos['providers'] = providers
-                manifestInfos['exportedActivities'] = exportedActivities
-                manifestInfos['exportedServices'] = exportedServices
-                manifestInfos['exportedReceivers'] = exportedReceivers
-                manifestInfos['exportedProviders'] = exportedProviders
-        manifestInfos['uses_permissions'] = uses_permissions
-        manifestInfos['permissions'] = permissions
-        return manifestInfos
+                            exportedProviders.add(providerName)
+                AppBaseData.activities = activities
+                AppBaseData.services = services
+                AppBaseData.receivers = receivers
+                AppBaseData.providers = providers
+                AppBaseData.exportedActivities = exportedActivities
+                AppBaseData.exportedServices = exportedServices
+                AppBaseData.exportedReceivers = exportedReceivers
+                AppBaseData.exportedProviders = exportedProviders
+        AppBaseData.uses_permissions = uses_permissions
+        AppBaseData.permissions = permissions
     else:
         logging.error('cannot find AndroidManifest.xml!')
-        return None
 
 
 def isMainActivity(elem):

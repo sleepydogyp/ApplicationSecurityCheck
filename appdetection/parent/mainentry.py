@@ -2,13 +2,13 @@
 
 import logging
 
-from appdetection.parent.common.commands import decompileApk
-from appdetection.parent.appoverview.overviewController import overviewManager
-from appdetection.parent.smaliparser.smali_parse_entry import smaliFilesEntry
+from commands import decompileApk
+from overviewController import overviewManager
+from smali_parse_entry import smaliFilesEntry
 
 
 logging.basicConfig(
-    filename='appdetect.log',
+    filename='app.log',
     level=logging.DEBUG,
     format='%(asctime)s %(filename)s[line:%(lineno)d] %(message)s',
     datefmt='%Y-%m-%d, %H:%M:%S')

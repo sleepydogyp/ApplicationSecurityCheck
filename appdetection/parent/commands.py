@@ -3,6 +3,8 @@
 import os
 import zipfile
 
+from data_appBase import AppBaseData
+
 '''
 需要执行命令的方法
 '''
@@ -15,7 +17,6 @@ def decompileApk(apkPath):
 
 # 应用名、版本号、图标
 def getBaseInfo(apkPath):
-    appBaseInfo = {}
     cmd = "aapt dump badging %s" % (apkPath)
     outputLines = os.popen(cmd).readlines()
     for line in outputLines:
@@ -24,18 +25,17 @@ def getBaseInfo(apkPath):
             for attrib in subLine.split(' '):
                 if attrib.startswith('versionName'):
                     versionName = attrib.split('\'')[1]
-                    appBaseInfo['versionName'] = versionName
+                    AppBaseData.versionName = versionName
                     break
         elif line.startswith('application: '):
             attribs = line.split(' ')
             for attrib in attribs:
                 if attrib.startswith('label'):
                     appName = attrib.split('\'')[1]
-                    appBaseInfo['appName'] = appName
+                    AppBaseData.appName = appName
                 elif attrib.startswith('icon'):
                     appIcon = attrib.split('\'')[1]
-                    appBaseInfo['appIcon'] = appIcon
-    return appBaseInfo
+                    AppBaseData.appIcon = appIcon
 
 
 # 证书信息：是否为debug证书
