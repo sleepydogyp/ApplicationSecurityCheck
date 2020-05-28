@@ -16,7 +16,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d, %H:%M:%S')
 
 
-class HTTPSHostnameVerify:
+class HTTPSTrustAllHostname:
 
     register = ''
 
@@ -24,7 +24,7 @@ class HTTPSHostnameVerify:
         if parser.operation == 'invoke-virtual':
             if 'SSLSocketFactory;->setHostnameVerifier(Lorg/apache/http/conn/ssl/X509HostnameVerifier;)V' in parser.body:
                 if len(parser.age) > 1 and self.register == parser.arg[1]:
-                    VulnerabilityData.HTTPSHostnameVerify.add(formatClassAndMethod(clazzName, methodName))
+                    VulnerabilityData.HTTPSTrustAllHostname.add(formatClassAndMethod(clazzName, methodName))
                     self.register = ''
         elif parser.operation == 'sget-object':
             if 'ALLOW_ALL_HOSTNAME_VERIFIER' in parser.body:

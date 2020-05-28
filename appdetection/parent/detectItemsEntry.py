@@ -9,7 +9,10 @@ import logging
 
 from item_contentProviderDirTraversal import ContentProviderDirTraversal
 from item_WebviewIgnoreSSLVerify import WebviewIgnoreSSLVerify
-from item_HTTPSHostnameVerify import HTTPSHostnameVerify
+from item_HTTPTrustAllSHostname import HTTPSTrustAllHostname
+from item_NullCerVerify import NullCerVerify
+from item_HostnameNotVerify import HostnameNotVerify
+from item_WebviewUnremovedInterface import WebviewUnremovedInterface
 
 from statementParser import InvokeParser, SgetParser, EndMethodParser
 
@@ -30,6 +33,7 @@ class MethodInfo:
 class ClazzInfo:
     clazzName = ''
     superClazz = ''
+    implements = ''
     methodSet = set()
 
 
@@ -44,7 +48,10 @@ class DetectItemsEntry:
 
     contentProviderDirTraversal = ContentProviderDirTraversal()
     webviewIgnoreSSLVerify = WebviewIgnoreSSLVerify()
-    hTTPSHostnameVerify = HTTPSHostnameVerify()
+    hTTPSTrustAllHostname = HTTPSTrustAllHostname()
+    nullCerVerify = NullCerVerify()
+    hostnameNotVerify = HostnameNotVerify()
+    webviewUnremovedInterface = WebviewUnremovedInterface()
 
     def parseSmaliFile(self, smaliLines):
         isMethod = False
@@ -57,17 +64,30 @@ class DetectItemsEntry:
                 logging.info('className: ' + self.clazzInfo.clazzName)
             elif line.startswith('.super'):
                 self.clazzInfo.superClazz = line - '.super '
+            elif line.startswith('.implements '):
+                self.clazzInfo.implements = line.split(' ')[1]
             elif line.startswith('.method'):
                 isMethod = True
                 self.formateMethodInfo(line)
                 # Content Provider目录遍历漏洞
-                if self.currentMethod == 'openFile':
+                if self.methodInfo.methodName == 'openFile':
                     self.contentProviderDirTraversal.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.methodInfo.methodArgs, self.methodInfo.methodReturn)
+                # HTTPS证书空校验
+                elif self.methodInfo.methodName == 'checkServerTrusted' or self.methodInfo.methodName == 'checkClientTrusted':
+                    self.nullCerVerify.checkMethod(self.clazzInfo)
+                # HTTPS 域名未验证
+                elif self.methodInfo.methodName == 'verify' and 'Ljavax/net/ssl/SSLSession;' in self.methodInfo.methodArgs:
+                    self.hostnameNotVerify.check(self.clazzInfo)
+                
                 continue
             elif line == '.end method':
                 isMethod = False
-                self.currentMethod = ''
-            elif isMethod:
+                self.endMethodParser.parse(line)
+                self.hTTPSTrustAllHostname.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.endMethodParser)
+                self.nullCerVerify.checkResult(self.clazzInfo, self.methodInfo.methodName)
+                self.webviewUnremovedInterface.checkResult(self.clazzInfo.clazzName, self.methodInfo.methodName)
+                self.methodInfo = MethodInfo()  # method结束，重新初始化MethodInfo
+            elif isMethod:  # 方法内
                 self.detect(line)
 
     def detect(self, statement):
@@ -77,13 +97,16 @@ class DetectItemsEntry:
             # WebView忽略SSL证书验证错误漏洞
             self.webviewIgnoreSSLVerify.check(self.clazzInfo, self.methodInfo, self.invokeParser)
             # HTTPS敏感数据劫持
-            self.hTTPSHostnameVerify.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
+            self.hTTPSTrustAllHostname.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
+            # 未移除有风险的WebView接口
+            self.webviewUnremovedInterface.checkInvoke(self.invokeParser)
         elif statement.startswith('sget-'):
             self.sgetParser.parse(statement)
-            self.hTTPSHostnameVerify.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.sgetParser)
-        elif statement.startswith('.end method'):
-            self.endMethodParser.parse(statement)
-            self.hTTPSHostnameVerify.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.endMethodParser)
+            self.hTTPSTrustAllHostname.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.sgetParser)
+        else:
+            self.nullCerVerify.checkIfMethodNull(statement)
+            self.hostnameNotVerify.checkIfReturnTrue(self.clazzInfo.clazzName, self.methodInfo.methodName, statement)
+            self.webviewUnremovedInterface.checkConst(statement)
 
     def formateMethodInfo(self, line):
         lineTemp = line.split(' ')
@@ -92,4 +115,4 @@ class DetectItemsEntry:
         argAndReturn = methodStatement - self.methodInfo.methodName
         temp = argAndReturn.subString(1).split(')')
         self.methodInfo.methodArgs = temp[0]
-        self.methodInfo.methodReturn = temp[1].subString(0, temp[1].len -1)
+        self.methodInfo.methodReturn = temp[1].subString(0, temp[1].len - 1)

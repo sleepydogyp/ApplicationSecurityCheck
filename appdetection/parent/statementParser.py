@@ -46,4 +46,32 @@ class EndMethodParser(Parser):
     body = ''
 
     def parse(self, statement):
-        self.body = statement         
+        self.body = statement
+
+
+class ConstParser(Parser):
+    operation = ''
+    arg = ''
+    value = ''
+
+    def parse(self, statement):
+        temp = statement.split(' ')
+        if len(temp) > 2:
+            self.operation = temp[0]
+            self.arg = temp[1]
+            self.value = temp[2]
+
+
+class ReturnParser(Parser):
+    operation = ''
+    value = ''
+
+    def parse(self, statement):
+        if 'return-void' in statement:
+            self.operation = statement
+        else:
+            temp = statement.split(' ')
+            if len(temp) > 1:
+                self.operation = temp[0]
+                self.value = temp[1]
+
