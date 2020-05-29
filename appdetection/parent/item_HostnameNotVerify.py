@@ -38,5 +38,10 @@ class HostnameNotVerify:
             else:
                 self.isConst = False
                 
+    def checkResult(self):
+        self.isConst = False
+        self.isHostNameVerifyMethod = False
+        self.constParser = ConstParser()
+
 
 

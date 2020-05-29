@@ -21,7 +21,7 @@ logging.basicConfig(
 
 class WebviewIgnoreSSLVerify:
 
-    def check(self, clazzInfo, methodInfo, invokeParser):
+    def checkInvoke(self, clazzInfo, methodInfo, invokeParser):
         methodName = methodInfo.methodName
         methodArgs = methodInfo.methodArgs
         methodReturn = methodInfo.methodReturn

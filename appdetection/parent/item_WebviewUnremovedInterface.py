@@ -42,7 +42,7 @@ class WebViewUnremovedInterface:
     def checkResult(self, clazzName, methodName):
         if not (self.searchBoxJavaBridge_flag and self.accessibility_flag and self.accessibility_flag):
             VulnerabilityData.WebViewUnremovedInterface.add(formatClassAndMethod(clazzName, methodName))
-            self.searchBoxJavaBridge_flag = False
-            self.accessibility_flag = False
-            self.accessibilityTraversal_flag = False
-            self.argMaps.clear()
+        self.searchBoxJavaBridge_flag = False
+        self.accessibility_flag = False
+        self.accessibilityTraversal_flag = False
+        self.argMaps.clear()

@@ -26,3 +26,6 @@ class AESWeakEncrypt:
             if constParser.value.startswith('AES') or constParser.value.startswith('DES'):
                 if 'ECB/NoPadding' in constParser.value or 'OFB/Nopadding' in constParser.value:
                     self.register = constParser.arg
+
+    def checkResult(self):
+        self.register = ''

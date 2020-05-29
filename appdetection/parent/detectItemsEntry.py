@@ -14,6 +14,7 @@ from item_NullCerVerify import NullCerVerify
 from item_HostnameNotVerify import HostnameNotVerify
 from item_WebviewUnremovedInterface import WebviewUnremovedInterface
 from item_AESWeakEncrypt import AESWeakEncrypt
+from item_SensiDataStorage import SensiDataStorage
 
 from statementParser import InvokeParser, SgetParser, EndMethodParser
 
@@ -54,6 +55,7 @@ class DetectItemsEntry:
     hostnameNotVerify = HostnameNotVerify()
     webviewUnremovedInterface = WebviewUnremovedInterface()
     aesWeakEncrypt = AESWeakEncrypt()
+    sensiDataStorage = SensiDataStorage()
 
     def parseSmaliFile(self, smaliLines):
         isMethod = False
@@ -85,9 +87,12 @@ class DetectItemsEntry:
             elif line == '.end method':
                 isMethod = False
                 self.endMethodParser.parse(line)
-                self.hTTPSTrustAllHostname.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.endMethodParser)
+                self.hTTPSTrustAllHostname.checkResult()
                 self.nullCerVerify.checkResult(self.clazzInfo, self.methodInfo.methodName)
+                self.hostnameNotVerify.checkResult()
                 self.webviewUnremovedInterface.checkResult(self.clazzInfo.clazzName, self.methodInfo.methodName)
+                self.aesWeakEncrypt.checkResult()
+                self.sensiDataStorage.checkResult(self.clazzInfo.clazzName, self.methodInfo.methodName)
                 self.methodInfo = MethodInfo()  # method结束，重新初始化MethodInfo
             elif isMethod:  # 方法内
                 self.detect(line)
@@ -97,21 +102,24 @@ class DetectItemsEntry:
         if statement.startswith('invoke-'):
             self.invokeParser.parse(statement)
             # WebView忽略SSL证书验证错误漏洞
-            self.webviewIgnoreSSLVerify.check(self.clazzInfo, self.methodInfo, self.invokeParser)
+            self.webviewIgnoreSSLVerify.checkInvoke(self.clazzInfo, self.methodInfo, self.invokeParser)
             # HTTPS敏感数据劫持
-            self.hTTPSTrustAllHostname.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
+            self.hTTPSTrustAllHostname.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
             # 未移除有风险的WebView接口
             self.webviewUnremovedInterface.checkInvoke(self.invokeParser)
             # AES/DES弱加密
             self.aesWeakEncrypt.checkInvoke(self.invokeParser)
+            # 敏感数据加密存储
+            self.sensiDataStorage.checkInvoke(self.invokeParser)
         elif statement.startswith('sget-'):
             self.sgetParser.parse(statement)
-            self.hTTPSTrustAllHostname.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.sgetParser)
+            self.hTTPSTrustAllHostname.checkSget(self.sgetParser)
         else:
             self.nullCerVerify.checkIfMethodNull(statement)
             self.hostnameNotVerify.checkIfReturnTrue(self.clazzInfo.clazzName, self.methodInfo.methodName, statement)
             self.webviewUnremovedInterface.checkConst(statement)
             self.aesWeakEncrypt.checkConst(statement)
+            self.sensiDataStorage.checkConst(statement)
 
     def formateMethodInfo(self, line):
         lineTemp = line.split(' ')

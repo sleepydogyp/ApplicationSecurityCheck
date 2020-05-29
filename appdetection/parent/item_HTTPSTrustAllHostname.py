@@ -20,19 +20,18 @@ class HTTPSTrustAllHostname:
 
     register = ''
 
-    def check(self, clazzName, methodName, parser):
-        if parser.operation == 'invoke-virtual':
-            if 'SSLSocketFactory;->setHostnameVerifier(Lorg/apache/http/conn/ssl/X509HostnameVerifier;)V' in parser.body:
-                if len(parser.age) > 1 and self.register == parser.arg[1]:
-                    VulnerabilityData.HTTPSTrustAllHostname.add(formatClassAndMethod(clazzName, methodName))
-                    self.register = ''
-        elif parser.operation == 'sget-object':
-            if 'ALLOW_ALL_HOSTNAME_VERIFIER' in parser.body:
-                self.register = parser.arg
-        elif '.end method' in parser.body:
-            self.register = ''
+    def checkInvoke(self, clazzName, methodName, parser):
+        if 'SSLSocketFactory;->setHostnameVerifier(Lorg/apache/http/conn/ssl/X509HostnameVerifier;)V' in parser.body:
+            if len(parser.age) > 1 and self.register == parser.arg[1]:
+                VulnerabilityData.HTTPSTrustAllHostname.add(formatClassAndMethod(clazzName, methodName))
+                self.register = ''
 
-        
+    def checkSget(self, sgetParser):
+        if 'ALLOW_ALL_HOSTNAME_VERIFIER' in sgetParser.body:
+            self.register = sgetParser.arg
+
+    def checkResult(self):
+        self.register = ''
 
 
 

@@ -1,15 +1,7 @@
 # -*- coding: utf_8 -*-
 
-from abc import ABCMeta, abstractmethod
 
-
-class Parser(metaclass=ABCMeta):
-    @abstractmethod
-    def parse(self, statement):
-        pass
-
-
-class SgetParser(Parser):
+class SgetParser():
     operation = ''
     arg = ''
     body = ''
@@ -21,7 +13,7 @@ class SgetParser(Parser):
         self.arg = temp[1].split(',')[0]
 
 
-class InvokeParser(Parser):
+class InvokeParser():
     operation = ''
     arg = list()
     body = ''
@@ -42,14 +34,14 @@ class InvokeParser(Parser):
                 i += 1
 
 
-class EndMethodParser(Parser):
+class EndMethodParser():
     body = ''
 
     def parse(self, statement):
         self.body = statement
 
 
-class ConstParser(Parser):
+class ConstParser():
     operation = ''
     arg = ''
     value = ''
@@ -62,7 +54,7 @@ class ConstParser(Parser):
             self.value = temp[2]
 
 
-class ReturnParser(Parser):
+class ReturnParser():
     operation = ''
     value = ''
 

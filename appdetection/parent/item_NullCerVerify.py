@@ -32,6 +32,6 @@ class NullCerVerify:
     def checkResult(self, clazzInfo, methodName):
         if self.isMethodNull and self.isLineNum:
             VulnerabilityData.nullCerVerify.add(formatClassAndMethod(clazzInfo.clazzName, methodName))
-            self.isLineNum = False
-            self.isMethodNull = False
-            self.isCerVerifyMethod = False
+        self.isLineNum = False
+        self.isMethodNull = False
+        self.isCerVerifyMethod = False
