@@ -14,6 +14,7 @@ from item_NullCerVerify import NullCerVerify
 from item_HostnameNotVerify import HostnameNotVerify
 from item_WebviewUnremovedInterface import WebviewUnremovedInterface
 from item_AESWeakEncrypt import AESWeakEncrypt
+from item_webViewSavePassword import WebViewSavePassword
 from item_SensiDataStorage import SensiDataStorage
 
 from statementParser import InvokeParser, SgetParser, EndMethodParser
@@ -55,6 +56,7 @@ class DetectItemsEntry:
     hostnameNotVerify = HostnameNotVerify()
     webviewUnremovedInterface = WebviewUnremovedInterface()
     aesWeakEncrypt = AESWeakEncrypt()
+    webViewSavePassword = WebViewSavePassword()
     sensiDataStorage = SensiDataStorage()
 
     def parseSmaliFile(self, smaliLines):
@@ -92,7 +94,7 @@ class DetectItemsEntry:
                 self.hostnameNotVerify.checkResult()
                 self.webviewUnremovedInterface.checkResult(self.clazzInfo.clazzName, self.methodInfo.methodName)
                 self.aesWeakEncrypt.checkResult()
-                self.sensiDataStorage.checkResult(self.clazzInfo.clazzName, self.methodInfo.methodName)
+                self.webViewSavePassword.checkResult(self.clazzInfo.clazzName, self.methodInfo.methodName)
                 self.methodInfo = MethodInfo()  # method结束，重新初始化MethodInfo
             elif isMethod:  # 方法内
                 self.detect(line)
@@ -109,7 +111,9 @@ class DetectItemsEntry:
             self.webviewUnremovedInterface.checkInvoke(self.invokeParser)
             # AES/DES弱加密
             self.aesWeakEncrypt.checkInvoke(self.invokeParser)
-            # 敏感数据加密存储
+            # WebView明文存储密码
+            self.webViewSavePassword.checkInvoke(self.invokeParser)
+            # TODO:敏感数据加密存储
             self.sensiDataStorage.checkInvoke(self.invokeParser)
         elif statement.startswith('sget-'):
             self.sgetParser.parse(statement)
@@ -119,7 +123,7 @@ class DetectItemsEntry:
             self.hostnameNotVerify.checkIfReturnTrue(self.clazzInfo.clazzName, self.methodInfo.methodName, statement)
             self.webviewUnremovedInterface.checkConst(statement)
             self.aesWeakEncrypt.checkConst(statement)
-            self.sensiDataStorage.checkConst(statement)
+            self.webViewSavePassword.checkConst(statement)
 
     def formateMethodInfo(self, line):
         lineTemp = line.split(' ')
