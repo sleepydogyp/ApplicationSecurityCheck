@@ -45,3 +45,4 @@ class WebViewUnremovedInterface:
             self.searchBoxJavaBridge_flag = False
             self.accessibility_flag = False
             self.accessibilityTraversal_flag = False
+            self.argMaps.clear()

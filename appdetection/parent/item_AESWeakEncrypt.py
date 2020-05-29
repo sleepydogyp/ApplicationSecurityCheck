@@ -17,6 +17,7 @@ class AESWeakEncrypt:
     def checkInvoke(self, clazzName, methodName, invokeParser):
         if not self.register == '' and 'Ljavax/crypto/Cipher;->getInstance(Ljava/lang/String;)Ljavax/crypto/Cipher;' in invokeParser.body and self.register == invokeParser.arg[0]:
             VulnerabilityData.aesWeakEncrypt.add(formatClassAndMethod(clazzName, methodName))
+            self.register = ''
     
     def checkConst(self, statement):
         if statement.startswith('const-string'):
