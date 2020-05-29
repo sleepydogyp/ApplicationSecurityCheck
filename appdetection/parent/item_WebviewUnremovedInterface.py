@@ -7,7 +7,7 @@
 from data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
 
-from statementParser import ConstParser
+from statementParser import ConstParser, InvokeParser
 
 # TODO:需要做方法间分析
 

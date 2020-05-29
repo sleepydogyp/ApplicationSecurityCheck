@@ -13,6 +13,7 @@ from item_HTTPTrustAllSHostname import HTTPSTrustAllHostname
 from item_NullCerVerify import NullCerVerify
 from item_HostnameNotVerify import HostnameNotVerify
 from item_WebviewUnremovedInterface import WebviewUnremovedInterface
+from item_AESWeakEncrypt import AESWeakEncrypt
 
 from statementParser import InvokeParser, SgetParser, EndMethodParser
 
@@ -52,6 +53,7 @@ class DetectItemsEntry:
     nullCerVerify = NullCerVerify()
     hostnameNotVerify = HostnameNotVerify()
     webviewUnremovedInterface = WebviewUnremovedInterface()
+    aesWeakEncrypt = AESWeakEncrypt()
 
     def parseSmaliFile(self, smaliLines):
         isMethod = False
@@ -100,6 +102,8 @@ class DetectItemsEntry:
             self.hTTPSTrustAllHostname.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
             # 未移除有风险的WebView接口
             self.webviewUnremovedInterface.checkInvoke(self.invokeParser)
+            # AES/DES弱加密
+            self.aesWeakEncrypt.checkInvoke(self.invokeParser)
         elif statement.startswith('sget-'):
             self.sgetParser.parse(statement)
             self.hTTPSTrustAllHostname.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.sgetParser)
@@ -107,6 +111,7 @@ class DetectItemsEntry:
             self.nullCerVerify.checkIfMethodNull(statement)
             self.hostnameNotVerify.checkIfReturnTrue(self.clazzInfo.clazzName, self.methodInfo.methodName, statement)
             self.webviewUnremovedInterface.checkConst(statement)
+            self.aesWeakEncrypt.checkConst(statement)
 
     def formateMethodInfo(self, line):
         lineTemp = line.split(' ')
