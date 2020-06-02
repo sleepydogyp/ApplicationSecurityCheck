@@ -19,6 +19,8 @@ from item_SensiDataStorage import SensiDataStorage
 from item_RSAWeakEncrypt import RSAWeakEncrypt
 from item_unzipDirTraverse import UnzipDirTraverse
 from item_DynamicLoadDex import DynamicLoadDex
+from item_ContentProviderDirtraverse import ContentProviderDirTraversal
+from item_InitIvParameterSpec import InitIvParameterSpec
 
 from statementParser import InvokeParser, SgetParser, EndMethodParser
 
@@ -64,6 +66,8 @@ class DetectItemsEntry:
     rsaWeakEncrypt = RSAWeakEncrypt()
     unzipDirTraverse = UnzipDirTraverse()
     dynamicLoadDex = DynamicLoadDex()
+    contentProviderDirTraversal = ContentProviderDirTraversal()
+    initIvParameterSpec = InitIvParameterSpec()
 
     def parseSmaliFile(self, smaliLines):
         isMethod = False
@@ -104,6 +108,7 @@ class DetectItemsEntry:
                 self.rsaWeakEncrypt.checkResult()
                 self.unzipDirTraverse.checkResult()
                 self.dynamicLoadDex.checkResult()
+                self.initIvParameterSpec.checkResult()
                 self.methodInfo = MethodInfo()  # method结束，重新初始化MethodInfo
             elif isMethod:  # 方法内
                 self.detect(line)
@@ -130,6 +135,10 @@ class DetectItemsEntry:
             self.unzipDirTraverse.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
             # 动态加载DEX文件
             self.dynamicLoadDex.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
+            # ContentProvider目录遍历漏洞
+            self.contentProviderDirTraversal.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
+            # 初始化IvParameterSpec错误
+            self.initIvParameterSpec.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
         elif statement.startswith('sget-'):
             self.sgetParser.parse(statement)
             self.hTTPSTrustAllHostname.checkSget(self.sgetParser)
@@ -142,6 +151,7 @@ class DetectItemsEntry:
             self.rsaWeakEncrypt.checkConst(statement)
             self.unzipDirTraverse.checkConst(statement)
             self.dynamicLoadDex.checkConst(statement)
+            self.initIvParameterSpec.checkConst(statement)
 
     def formateMethodInfo(self, line):
         lineTemp = line.split(' ')
