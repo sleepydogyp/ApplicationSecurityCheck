@@ -8,7 +8,7 @@ WebView忽略SSL证书验证错误漏洞
 from data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
 from detecctItemsEntry import MethodInfo, ClazzInfo
-from appdetection.parent.smaliparser.invokeParser import InvokeParser
+from statementParser import InvokeParser
 
 import logging
 

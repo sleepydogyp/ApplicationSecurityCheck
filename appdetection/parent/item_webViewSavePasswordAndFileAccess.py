@@ -2,7 +2,7 @@
 
 
 '''
-WebView明文存储密码
+WebView明文存储密码, WebView File域同源绕过
 '''
 
 from data_vulnerability import VulnerabilityData
@@ -11,20 +11,21 @@ from formatClassAndMethod import formatClassAndMethod
 from statementParser import ConstParser, InvokeParser
 
 
-class WebViewSavePassword:
+class WebViewSavePasswordAndFileAccess:
 
     constMap = dict()
-    isWebviewSettings = False
     isSetSavePassWordFalse = False
+    isFileAccess = False
 
     def checkInvoke(self, invokeParser):
-        if 'Landroid/webkit/WebView;->getSettings()Landroid/webkit/WebSettings;' in invokeParser.body:
-            self.isWebviewSettings = True
-        elif self.isWebviewSettings and 'Landroid/webkit/WebSettings;->setSavePassword(Z)V' in invokeParser.body:
+        if 'Landroid/webkit/WebSettings;->setSavePassword(Z)V' in invokeParser.body:
             if len(invokeParser.arg) > 1 and invokeParser.arg[1] in self.constMap:
-                if self.constMap[invokeParser.arg[1]] == '0x0':
+                if '0x0' in self.constMap[invokeParser.arg[1]]:
                     self.isSetSavePassWordFalse = True
-                    self.isWebviewSettings = False
+        elif 'Landroid/webkit/WebSettings;->setJavaScriptEnabled(Z)V' in invokeParser.body or 'Landroid/webkit/WebSettings;->setAllowFileAccess(Z)V' in invokeParser.body:
+            if len(invokeParser.arg) > 1 and invokeParser.arg[1] in self.constMap:
+                if '0x1' in self.constMap[invokeParser.arg[1]]:
+                    self.isFileAccess = True
 
     def checkConst(self, statement):
         if statement.startswith('const'):
@@ -37,7 +38,9 @@ class WebViewSavePassword:
 
     def checkResult(self, clazzName, methodName):
         if not self.isSetSavePassWordFalse:
-            VulnerabilityData.webViewSavePassword.add(formatClassAndMethod(clazzName, methodName))
+            VulnerabilityData.webViewSavePassword.add()
+        if self.isFileAccess:
+            VulnerabilityData.webViewFileAccess.add(formatClassAndMethod(clazzName, methodName))
         self.constMap.clear()
-        self.isWebviewSettings = False
         self.isSetSavePassWordFalse = False
+        self.isFileAccess = False

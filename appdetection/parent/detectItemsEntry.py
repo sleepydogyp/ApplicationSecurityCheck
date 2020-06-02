@@ -14,8 +14,11 @@ from item_NullCerVerify import NullCerVerify
 from item_HostnameNotVerify import HostnameNotVerify
 from item_WebviewUnremovedInterface import WebviewUnremovedInterface
 from item_AESWeakEncrypt import AESWeakEncrypt
-from item_webViewSavePassword import WebViewSavePassword
+from item_webViewSavePasswordAndFileAccess import WebViewSavePasswordAndFileAccess
 from item_SensiDataStorage import SensiDataStorage
+from item_RSAWeakEncrypt import RSAWeakEncrypt
+from item_unzipDirTraverse import UnzipDirTraverse
+from item_DynamicLoadDex import DynamicLoadDex
 
 from statementParser import InvokeParser, SgetParser, EndMethodParser
 
@@ -56,8 +59,11 @@ class DetectItemsEntry:
     hostnameNotVerify = HostnameNotVerify()
     webviewUnremovedInterface = WebviewUnremovedInterface()
     aesWeakEncrypt = AESWeakEncrypt()
-    webViewSavePassword = WebViewSavePassword()
+    webViewSavePasswordAndFileAccess = WebViewSavePasswordAndFileAccess()
     sensiDataStorage = SensiDataStorage()
+    rsaWeakEncrypt = RSAWeakEncrypt()
+    unzipDirTraverse = UnzipDirTraverse()
+    dynamicLoadDex = DynamicLoadDex()
 
     def parseSmaliFile(self, smaliLines):
         isMethod = False
@@ -94,7 +100,10 @@ class DetectItemsEntry:
                 self.hostnameNotVerify.checkResult()
                 self.webviewUnremovedInterface.checkResult(self.clazzInfo.clazzName, self.methodInfo.methodName)
                 self.aesWeakEncrypt.checkResult()
-                self.webViewSavePassword.checkResult(self.clazzInfo.clazzName, self.methodInfo.methodName)
+                self.webViewSavePasswordAndFileAccess.checkResult(self.clazzInfo.clazzName, self.methodInfo.methodName)
+                self.rsaWeakEncrypt.checkResult()
+                self.unzipDirTraverse.checkResult()
+                self.dynamicLoadDex.checkResult()
                 self.methodInfo = MethodInfo()  # method结束，重新初始化MethodInfo
             elif isMethod:  # 方法内
                 self.detect(line)
@@ -111,10 +120,16 @@ class DetectItemsEntry:
             self.webviewUnremovedInterface.checkInvoke(self.invokeParser)
             # AES/DES弱加密
             self.aesWeakEncrypt.checkInvoke(self.invokeParser)
-            # WebView明文存储密码
-            self.webViewSavePassword.checkInvoke(self.invokeParser)
+            # WebView明文存储密码，WebViewFile域绕过
+            self.webViewSavePasswordAndFileAccess.checkInvoke(self.invokeParser)
             # TODO:敏感数据加密存储
             self.sensiDataStorage.checkInvoke(self.invokeParser)
+            # RSA弱加密
+            self.rsaWeakEncrypt.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
+            # unzip目录遍历漏洞
+            self.unzipDirTraverse.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
+            # 动态加载DEX文件
+            self.dynamicLoadDex.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
         elif statement.startswith('sget-'):
             self.sgetParser.parse(statement)
             self.hTTPSTrustAllHostname.checkSget(self.sgetParser)
@@ -123,7 +138,10 @@ class DetectItemsEntry:
             self.hostnameNotVerify.checkIfReturnTrue(self.clazzInfo.clazzName, self.methodInfo.methodName, statement)
             self.webviewUnremovedInterface.checkConst(statement)
             self.aesWeakEncrypt.checkConst(statement)
-            self.webViewSavePassword.checkConst(statement)
+            self.webViewSavePasswordAndFileAccess.checkConst(statement)
+            self.rsaWeakEncrypt.checkConst(statement)
+            self.unzipDirTraverse.checkConst(statement)
+            self.dynamicLoadDex.checkConst(statement)
 
     def formateMethodInfo(self, line):
         lineTemp = line.split(' ')
