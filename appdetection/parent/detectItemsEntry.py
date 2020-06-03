@@ -21,6 +21,7 @@ from item_unzipDirTraverse import UnzipDirTraverse
 from item_DynamicLoadDex import DynamicLoadDex
 from item_ContentProviderDirtraverse import ContentProviderDirTraversal
 from item_InitIvParameterSpec import InitIvParameterSpec
+from item_LocalDOS import LocalDOS
 
 from statementParser import InvokeParser, SgetParser, EndMethodParser
 
@@ -68,6 +69,7 @@ class DetectItemsEntry:
     dynamicLoadDex = DynamicLoadDex()
     contentProviderDirTraversal = ContentProviderDirTraversal()
     initIvParameterSpec = InitIvParameterSpec()
+    localDOS = LocalDOS()
 
     def parseSmaliFile(self, smaliLines):
         isMethod = False
@@ -139,6 +141,8 @@ class DetectItemsEntry:
             self.contentProviderDirTraversal.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
             # 初始化IvParameterSpec错误
             self.initIvParameterSpec.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
+            # 本地拒绝服务攻击
+            self.localDOS.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
         elif statement.startswith('sget-'):
             self.sgetParser.parse(statement)
             self.hTTPSTrustAllHostname.checkSget(self.sgetParser)

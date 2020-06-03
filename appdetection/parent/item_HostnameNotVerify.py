@@ -30,7 +30,7 @@ class HostnameNotVerify:
                 if self.isConst:
                     returnParser = ReturnParser()
                     returnParser.parse(statement)
-                    if returnParser.value == self.constParser.arg and self.constParser.value == '0x1':
+                    if returnParser.value == self.constParser.arg and '0x1' in self.constParser.value:
                         VulnerabilityData.HostnameNotVerify.add(formatClassAndMethod(clazzName, methodName))
                         self.isConst = False
                         self.isHostNameVerifyMethod = False
