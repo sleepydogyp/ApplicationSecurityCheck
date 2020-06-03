@@ -7,7 +7,6 @@ parse smali file
 import logging
 
 
-from item_contentProviderDirTraversal import ContentProviderDirTraversal
 from item_WebviewIgnoreSSLVerify import WebviewIgnoreSSLVerify
 from item_HTTPTrustAllSHostname import HTTPSTrustAllHostname
 from item_NullCerVerify import NullCerVerify
@@ -22,6 +21,7 @@ from item_DynamicLoadDex import DynamicLoadDex
 from item_ContentProviderDirtraverse import ContentProviderDirTraversal
 from item_InitIvParameterSpec import InitIvParameterSpec
 from item_LocalDOS import LocalDOS
+from item_DynamicBroadcast import DynamicBroadcast
 
 from statementParser import InvokeParser, SgetParser, EndMethodParser
 
@@ -55,7 +55,6 @@ class DetectItemsEntry:
     sgetParser = SgetParser()
     endMethodParser = EndMethodParser()
 
-    contentProviderDirTraversal = ContentProviderDirTraversal()
     webviewIgnoreSSLVerify = WebviewIgnoreSSLVerify()
     hTTPSTrustAllHostname = HTTPSTrustAllHostname()
     nullCerVerify = NullCerVerify()
@@ -70,6 +69,7 @@ class DetectItemsEntry:
     contentProviderDirTraversal = ContentProviderDirTraversal()
     initIvParameterSpec = InitIvParameterSpec()
     localDOS = LocalDOS()
+    dynamicBroadcast = DynamicBroadcast()
 
     def parseSmaliFile(self, smaliLines):
         isMethod = False
@@ -87,11 +87,8 @@ class DetectItemsEntry:
             elif line.startswith('.method'):
                 isMethod = True
                 self.formateMethodInfo(line)
-                # Content Provider目录遍历漏洞
-                if self.methodInfo.methodName == 'openFile':
-                    self.contentProviderDirTraversal.check(self.clazzInfo.clazzName, self.methodInfo.methodName, self.methodInfo.methodArgs, self.methodInfo.methodReturn)
                 # HTTPS证书空校验
-                elif self.methodInfo.methodName == 'checkServerTrusted' or self.methodInfo.methodName == 'checkClientTrusted':
+                if self.methodInfo.methodName == 'checkServerTrusted' or self.methodInfo.methodName == 'checkClientTrusted':
                     self.nullCerVerify.checkMethod(self.clazzInfo)
                 # HTTPS 域名未验证
                 elif self.methodInfo.methodName == 'verify' and 'Ljavax/net/ssl/SSLSession;' in self.methodInfo.methodArgs:
@@ -111,6 +108,7 @@ class DetectItemsEntry:
                 self.unzipDirTraverse.checkResult()
                 self.dynamicLoadDex.checkResult()
                 self.initIvParameterSpec.checkResult()
+                self.dynamicBroadcast.checkResult()
                 self.methodInfo = MethodInfo()  # method结束，重新初始化MethodInfo
             elif isMethod:  # 方法内
                 self.detect(line)
@@ -143,6 +141,8 @@ class DetectItemsEntry:
             self.initIvParameterSpec.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
             # 本地拒绝服务攻击
             self.localDOS.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
+            # 动态注册广播暴露风险
+            self.dynamicBroadcast.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
         elif statement.startswith('sget-'):
             self.sgetParser.parse(statement)
             self.hTTPSTrustAllHostname.checkSget(self.sgetParser)
@@ -156,6 +156,7 @@ class DetectItemsEntry:
             self.unzipDirTraverse.checkConst(statement)
             self.dynamicLoadDex.checkConst(statement)
             self.initIvParameterSpec.checkConst(statement)
+            self.dynamicBroadcast.checkConst(statement)
 
     def formateMethodInfo(self, line):
         lineTemp = line.split(' ')
