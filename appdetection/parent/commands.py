@@ -40,7 +40,7 @@ def getBaseInfo(apkPath):
 
 # 证书信息：是否为debug证书
 def getCertInfos(apkPath):
-    zdir = zipfile.ZipFile(apkPath, module='r')
+    zdir = zipfile.ZipFile(apkPath, 'r')
     zdir.extract('CERT.RSA', apkPath)
     cmd = 'keytool -printcert -file ' + '/CERT.RSA'
     outputLines = os.popen(cmd).readlines()
