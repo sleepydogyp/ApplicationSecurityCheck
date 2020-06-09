@@ -4,7 +4,7 @@
 ContentProvider目录遍历漏洞
 '''
 
-from data_appBase import AppBaseData
+from parent.data_appBase import AppBaseData
 from data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
 
@@ -13,7 +13,7 @@ from statementParser import ConstParser, InvokeParser
 
 class ContentProviderDirTraverse:
 
-    def checkinVoke(self, clazzName, methodName, invokeParser):
+    def checkInvoke(self, clazzName, methodName, invokeParser):
         if 'openFile(' in invokeParser.body and '([Landroid/net/Uri;Ljava/lang/String;])' in invokeParser.body and 'Landroid/os/ParcelFileDescriptor;' in invokeParser.body:
             clazzName = clazzName.subString(1).replace('/', '.')
             if clazzName in AppBaseData.exportedProviders:

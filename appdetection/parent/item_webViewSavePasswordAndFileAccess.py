@@ -5,7 +5,7 @@
 WebView明文存储密码, WebView File域同源绕过
 '''
 
-from data_vulnerability import VulnerabilityData
+from parent.data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
 
 from statementParser import ConstParser, InvokeParser

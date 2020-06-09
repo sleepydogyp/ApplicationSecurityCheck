@@ -7,19 +7,19 @@ parse smali file
 import logging
 
 
-from item_WebviewIgnoreSSLVerify import WebviewIgnoreSSLVerify
-from item_HTTPTrustAllSHostname import HTTPSTrustAllHostname
+from parent.item_WebviewIgnoreSSLVerify import WebviewIgnoreSSLVerify
+from item_HTTPSTrustAllHostname import HTTPSTrustAllHostname
 from item_NullCerVerify import NullCerVerify
 from item_HostnameNotVerify import HostnameNotVerify
-from item_WebviewUnremovedInterface import WebviewUnremovedInterface
+from parent.item_WebviewUnremovedInterface import WebViewUnremovedInterface
 from item_AESWeakEncrypt import AESWeakEncrypt
 from item_webViewSavePasswordAndFileAccess import WebViewSavePasswordAndFileAccess
 from item_SensiDataStorage import SensiDataStorage
 from item_RSAWeakEncrypt import RSAWeakEncrypt
 from item_unzipDirTraverse import UnzipDirTraverse
 from item_DynamicLoadDex import DynamicLoadDex
-from item_ContentProviderDirtraverse import ContentProviderDirTraversal
-from item_InitIvParameterSpec import InitIvParameterSpec
+from item_ContentProviderDirtraverse import ContentProviderDirTraverse
+from item_InitIvParameterSpec import InitIvparameterSpec
 from item_LocalDOS import LocalDOS
 from item_DynamicBroadcast import DynamicBroadcast
 
@@ -59,15 +59,15 @@ class DetectItemsEntry:
     hTTPSTrustAllHostname = HTTPSTrustAllHostname()
     nullCerVerify = NullCerVerify()
     hostnameNotVerify = HostnameNotVerify()
-    webviewUnremovedInterface = WebviewUnremovedInterface()
+    webviewUnremovedInterface = WebViewUnremovedInterface()
     aesWeakEncrypt = AESWeakEncrypt()
     webViewSavePasswordAndFileAccess = WebViewSavePasswordAndFileAccess()
     sensiDataStorage = SensiDataStorage()
     rsaWeakEncrypt = RSAWeakEncrypt()
     unzipDirTraverse = UnzipDirTraverse()
     dynamicLoadDex = DynamicLoadDex()
-    contentProviderDirTraversal = ContentProviderDirTraversal()
-    initIvParameterSpec = InitIvParameterSpec()
+    contentProviderDirTraverse = ContentProviderDirTraverse()
+    initIvParameterSpec = InitIvparameterSpec()
     localDOS = LocalDOS()
     dynamicBroadcast = DynamicBroadcast()
 
@@ -92,7 +92,7 @@ class DetectItemsEntry:
                     self.nullCerVerify.checkMethod(self.clazzInfo)
                 # HTTPS 域名未验证
                 elif self.methodInfo.methodName == 'verify' and 'Ljavax/net/ssl/SSLSession;' in self.methodInfo.methodArgs:
-                    self.hostnameNotVerify.check(self.clazzInfo)
+                    self.hostnameNotVerify.checkMethod(self.clazzInfo)
                 
                 continue
             elif line == '.end method':
@@ -124,11 +124,11 @@ class DetectItemsEntry:
             # 未移除有风险的WebView接口
             self.webviewUnremovedInterface.checkInvoke(self.invokeParser)
             # AES/DES弱加密
-            self.aesWeakEncrypt.checkInvoke(self.invokeParser)
+            self.aesWeakEncrypt.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
             # WebView明文存储密码，WebViewFile域绕过
             self.webViewSavePasswordAndFileAccess.checkInvoke(self.invokeParser)
             # TODO:敏感数据加密存储
-            self.sensiDataStorage.checkInvoke(self.invokeParser)
+            # self.sensiDataStorage.checkInvoke(self.invokeParser)
             # RSA弱加密
             self.rsaWeakEncrypt.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
             # unzip目录遍历漏洞
@@ -136,7 +136,7 @@ class DetectItemsEntry:
             # 动态加载DEX文件
             self.dynamicLoadDex.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
             # ContentProvider目录遍历漏洞
-            self.contentProviderDirTraversal.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
+            self.contentProviderDirTraverse.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
             # 初始化IvParameterSpec错误
             self.initIvParameterSpec.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
             # 本地拒绝服务攻击
@@ -160,7 +160,7 @@ class DetectItemsEntry:
 
     def formateMethodInfo(self, line):
         lineTemp = line.split(' ')
-        methodStatement = [len(lineTemp) - 1]
+        methodStatement = lineTemp[len(lineTemp) - 1]
         self.methodInfo.methodName = methodStatement.split('(')[0]
         argAndReturn = methodStatement - self.methodInfo.methodName
         temp = argAndReturn.subString(1).split(')')

@@ -4,7 +4,7 @@
 敏感数据加密存储
 '''
 
-from data_vulnerability import VulnerabilityData
+from parent.parent.data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
 
 from statementParser import ConstParser, InvokeParser

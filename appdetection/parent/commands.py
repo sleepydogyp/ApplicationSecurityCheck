@@ -3,7 +3,7 @@
 import os
 import zipfile
 
-from data_appBase import AppBaseData
+from parent.data_appBase import AppBaseData
 
 '''
 需要执行命令的方法

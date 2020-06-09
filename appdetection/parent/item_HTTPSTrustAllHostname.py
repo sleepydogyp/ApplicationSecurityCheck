@@ -4,7 +4,7 @@
 HTTPS敏感数据劫持
 '''
 
-from data_vulnerability import VulnerabilityData
+from parent.data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
 
 import logging

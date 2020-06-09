@@ -4,7 +4,7 @@
 unzip目录遍历漏洞
 '''
 
-from data_vulnerability import VulnerabilityData
+from parent.parent.data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
 
 from statementParser import ConstParser, InvokeParser
@@ -15,7 +15,7 @@ class UnzipDirTraverse:
     constMap = dict()
     isGetName = False
 
-    def checkinVoke(self, clazzName, methodName, invokeParser):
+    def checkInvoke(self, clazzName, methodName, invokeParser):
         if 'Ljava/util/zip/ZipEntry;->getName()Ljava/lang/String;' in invokeParser.body:
             self.isGetName = True
         elif 'Ljava/io/File;->getCanonicalPath()Ljava/lang/String;' in invokeParser.body:

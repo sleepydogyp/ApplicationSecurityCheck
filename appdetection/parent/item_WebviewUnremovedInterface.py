@@ -4,7 +4,7 @@
 未移除有风险的WebView接口
 '''
 
-from data_vulnerability import VulnerabilityData
+from parent.data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
 
 from statementParser import ConstParser, InvokeParser

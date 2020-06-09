@@ -2,9 +2,9 @@
 
 import logging
 
-from manifest_parser import parseManifest
+from parent.manifest_parser import parseManifest
 from commands import getBaseInfo, getCertInfos
-from data_appBase import AppBaseData
+from parent.data_appBase import AppBaseData
 
 logging.basicConfig(
     filename='app.log',

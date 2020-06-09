@@ -4,7 +4,7 @@
 HTTPS 域名未验证
 '''
 
-from data_vulnerability import VulnerabilityData
+from parent.data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
 
 from statementParser import ConstParser, ReturnParser

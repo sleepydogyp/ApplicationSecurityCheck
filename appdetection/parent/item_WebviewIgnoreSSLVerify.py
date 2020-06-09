@@ -5,7 +5,7 @@ WebView忽略SSL证书验证错误漏洞
 '''
 
 
-from data_vulnerability import VulnerabilityData
+from parent.data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
 from detectItemsEntry import MethodInfo, ClazzInfo
 from statementParser import InvokeParser

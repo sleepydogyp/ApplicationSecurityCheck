@@ -4,7 +4,7 @@
 本地拒绝服务攻击
 '''
 
-from data_vulnerability import VulnerabilityData
+from parent.data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
 
 from statementParser import InvokeParser

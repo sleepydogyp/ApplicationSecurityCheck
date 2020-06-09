@@ -2,7 +2,7 @@
 
 import logging
 
-from appdetection.parent.data.appBaseInfo import AppBaseData
+from parent.data_appBase import AppBaseData
 
 try:
     import xml.etree.cElementTree as ET

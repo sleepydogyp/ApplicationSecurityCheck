@@ -3,7 +3,7 @@
 import logging
 import os
 
-from detectItemsEntry import DetectItemsEntry
+from parent.detectItemsEntry import DetectItemsEntry
 
 logging.basicConfig(
     filename='app.log',
