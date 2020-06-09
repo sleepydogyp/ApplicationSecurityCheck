@@ -27,8 +27,8 @@ def smaliFilesEntry(dirPath):
                         if '/android' not in thisFilePath:
                             # logging.info('dir: ' + dir + '/' + file)
                             smaliLines = readSmaliFileByLine(thisFilePath)
-                            smaliParser = SmaliParser()
-                            smaliParser.parseSmaliFile(smaliLines)
+                            detectItems = DetectItemsEntry()
+                            detectItems.parseSmaliFile(smaliLines)
             else:
                 continue
 
