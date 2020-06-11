@@ -2,9 +2,9 @@
 
 import logging
 
-from parent.manifest_parser import parseManifest
-from commands import getBaseInfo, getCertInfos
-from parent.data_appBase import AppBaseData
+from manifest_parser import parseManifest
+from commands import parseBaseInfos, parseCert
+from data_appBase import AppBaseData
 
 logging.basicConfig(
     filename='app.log',
@@ -13,29 +13,13 @@ logging.basicConfig(
     datefmt='%Y-%m-%d, %H:%M:%S')
 
 
-def overviewManager(dirPath):
+def overviewManager(dirPath, appBaseData):
     # 1.parse AndroidManifest
-    parseManifestInfos(dirPath)
+    # TODO: detect failed!
+    parseManifest(dirPath+ '/AndroidManifest.xml', appBaseData)
 
     # 2. get appName , icon and version
-    parseBaseInfos(dirPath)
+    parseBaseInfos(dirPath + '.apk', appBaseData)
 
     # 3. is debug cer or release cer
-    AppBaseData.isDebugCert = parseCert(dirPath)
-
-
-def parseManifestInfos(dirPath):
-    manifestFilePath = dirPath + '/AndroidManifest.xml'
-
-    # TODO: detect failed!
-    parseManifest(manifestFilePath)
-
-
-# 应用名、版本号、图标
-def parseBaseInfos(dirPath):
-    getBaseInfo(dirPath + '.apk')
-
-
-# 是否为deubg证书
-def parseCert(dirPath):
-    return getCertInfos(dirPath + '.apk')
+    parseCert(dirPath + '.apk', appBaseData)

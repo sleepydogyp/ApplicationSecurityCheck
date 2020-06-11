@@ -2,7 +2,7 @@
 
 import logging
 
-from parent.data_appBase import AppBaseData
+from data_appBase import AppBaseData
 
 try:
     import xml.etree.cElementTree as ET
@@ -17,11 +17,11 @@ logging.basicConfig(
 namespace = '{http://schemas.android.com/apk/res/android}'
 
 
-def parseManifest(filePath):
+def parseManifest(filePath, appBaseData):
     if (filePath.endswith('.xml')):
         elementTree = ET.parse(filePath)
         root = elementTree.getroot()
-        AppBaseData.packageName = root.get('package')
+        appBaseData.packageName = root.get('package')
         uses_permissions = set()
         permissions = set()
         for child in root:
@@ -42,15 +42,15 @@ def parseManifest(filePath):
                 allowBackup缺省值为true, 必须显示设置为false，才没有风险
                 '''
                 # debuggable
-                if child.get('debuggable') in "true":
-                    AppBaseData.debuggable = True
+                if child.get('debuggable') == 'true':
+                    appBaseData.debuggable = True
                 else:
-                    AppBaseData.debuggable = False
+                    appBaseData.debuggable = False
                 # allowBackup
-                if child.get('allowBackup') in "false":
-                    AppBaseData.allowBackup = False
+                if child.get('allowBackup') == 'false':
+                    appBaseData.allowBackup = False
                 else:
-                    AppBaseData.allowBackup = True
+                    appBaseData.allowBackup = True
 
                 # four components and exported components
                 exportedActivities = set()
@@ -69,7 +69,7 @@ def parseManifest(filePath):
                             exportedActivities.add(activityName)
                         if isMainActivity(component):
                             # mainActivity
-                            AppBaseData.mainActivity = activityName
+                            appBaseData.mainActivity = activityName
                     elif (component.tag == 'service'):
                         serviceName = component.attrib[namespace + 'name']
                         services.add(serviceName)
@@ -85,16 +85,16 @@ def parseManifest(filePath):
                         providers.add(providerName)
                         if isExported(component):
                             exportedProviders.add(providerName)
-                AppBaseData.activities = activities
-                AppBaseData.services = services
-                AppBaseData.receivers = receivers
-                AppBaseData.providers = providers
-                AppBaseData.exportedActivities = exportedActivities
-                AppBaseData.exportedServices = exportedServices
-                AppBaseData.exportedReceivers = exportedReceivers
-                AppBaseData.exportedProviders = exportedProviders
-        AppBaseData.uses_permissions = uses_permissions
-        AppBaseData.permissions = permissions
+                appBaseData.activities = activities
+                appBaseData.services = services
+                appBaseData.receivers = receivers
+                appBaseData.providers = providers
+                appBaseData.exportedActivities = exportedActivities
+                appBaseData.exportedServices = exportedServices
+                appBaseData.exportedReceivers = exportedReceivers
+                appBaseData.exportedProviders = exportedProviders
+        appBaseData.uses_permissions = uses_permissions
+        appBaseData.permissions = permissions
     else:
         logging.error('cannot find AndroidManifest.xml!')
 

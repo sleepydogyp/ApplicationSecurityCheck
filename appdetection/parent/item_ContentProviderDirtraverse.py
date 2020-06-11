@@ -13,11 +13,14 @@ from statementParser import ConstParser, InvokeParser
 
 class ContentProviderDirTraverse:
 
+    def __init__(self, vulnerabilityData):
+        self.vulnerabilityData = vulnerabilityData
+
     def checkInvoke(self, clazzName, methodName, invokeParser):
         if 'openFile(' in invokeParser.body and '([Landroid/net/Uri;Ljava/lang/String;])' in invokeParser.body and 'Landroid/os/ParcelFileDescriptor;' in invokeParser.body:
             clazzName = clazzName.subString(1).replace('/', '.')
             if clazzName in AppBaseData.exportedProviders:
-                VulnerabilityData.contentProviderDirTraverse.add(formatClassAndMethod(clazzName, methodName))
+                self.vulnerabilityData.contentProviderDirTraverse.add(formatClassAndMethod(clazzName, methodName))
 
 
  

@@ -14,6 +14,9 @@ from statementParser import ConstParser, InvokeParser
 
 class InitIvparameterSpec:
 
+    def __init__(self, vulnerabilityData):
+        self.vulnerabilityData = vulnerabilityData
+
     constSet = set()
     getBytearg = ''
 
@@ -23,7 +26,7 @@ class InitIvparameterSpec:
                 self.getBytearg = invokeParser.arg[0]
             elif 'Ljavax/crypto/spec/IvParameterSpec;-><init>([B)V' in invokeParser.body:
                 if self.getBytearg != '' and len(invokeParser.arg) > 1 and invokeParser.arg[1] == self.getBytearg:
-                    VulnerabilityData.initIvparameterSpec.add(formatClassAndMethod(clazzName, methodName))
+                    self.vulnerabilityData.initIvparameterSpec.add(formatClassAndMethod(clazzName, methodName))
 
     def checkConst(self, statement):
         if statement.startswith('const'):

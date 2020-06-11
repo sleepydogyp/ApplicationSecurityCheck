@@ -12,11 +12,14 @@ from statementParser import ConstParser, InvokeParser
 
 class AESWeakEncrypt:
 
+    def __init__(self, vulnerabilityData):
+        self.vulnerabilityData = vulnerabilityData
+
     register = ''
 
     def checkInvoke(self, clazzName, methodName, invokeParser):
         if not self.register == '' and 'Ljavax/crypto/Cipher;->getInstance(Ljava/lang/String;)Ljavax/crypto/Cipher;' in invokeParser.body and self.register == invokeParser.arg[0]:
-            VulnerabilityData.aesWeakEncrypt.add(formatClassAndMethod(clazzName, methodName))
+            self.vulnerabilityData.aesWeakEncrypt.add(formatClassAndMethod(clazzName, methodName))
             self.register = ''
     
     def checkConst(self, statement):

@@ -6,7 +6,7 @@
 
 
 def formatClassAndMethod(className, methodName):
-    className = className.subString(1).replace('/', '.')
+    className = className[1:].replace('/', '.')
     methodName = methodName.split('(')[0]
     formatedResult = className + ' : ' + methodName
     return formatedResult

@@ -12,21 +12,21 @@ from statementParser import ConstParser, InvokeParser
 
 class DynamicLoadDex:
 
+    def __init__(self, vulnerabilityData):
+        self.vulnerabilityData = vulnerabilityData
+
     constMap = dict()
 
     def checkInvoke(self, clazzName, methodName, invokeParser):
-        if 'Ldalvik/system/DexClassLoader;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;)V' in invokeParser:
+        if 'Ldalvik/system/DexClassLoader;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;)V' in invokeParser.body:
             if len(invokeParser.arg) > 2 and invokeParser.arg[2] in self.constMap.keys() and '/sdcard' in self.constMap[invokeParser.arg[2]]:
-                VulnerabilityData.dynamicLoadDex.add(formatClassAndMethod(clazzName, methodName))
+                self.vulnerabilityData.dynamicLoadDex.add(formatClassAndMethod(clazzName, methodName))
 
     def checkConst(self, statement):
         if statement.startswith('const'):
             constParser = ConstParser()
             constParser.parse(statement)
-            if constParser.arg in self.constMap:
-                self.constMap[constParser.arg] = constParser.value
-            else:
-                self.constMap[constParser.arg] = self[constParser.value]
+            self.constMap[constParser.arg] = constParser.value
 
     def checkResult(self):
         self.constMap.clear()

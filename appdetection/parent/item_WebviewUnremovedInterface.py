@@ -14,7 +14,11 @@ from statementParser import ConstParser, InvokeParser
 
 class WebViewUnremovedInterface:
 
+    def __init__(self, vulnerabilityData):
+        self.vulnerabilityData = vulnerabilityData
+
     argMaps = dict()
+    isRemoveJavascriptInterface = False
     isWebviewSetting = False
     searchBoxJavaBridge_flag = False
     accessibilityTraversal_flag = False
@@ -22,6 +26,7 @@ class WebViewUnremovedInterface:
 
     def checkInvoke(self, invokeParser):
         if 'Landroid/webkit/WebView;->removeJavascriptInterface(Ljava/lang/String;)V' in invokeParser.body:
+            self.isRemoveJavascriptInterface = True
             methodArgs = invokeParser.arg
             if len(methodArgs) > 1:
                 if methodArgs[1] in self.argMaps:
@@ -40,8 +45,9 @@ class WebViewUnremovedInterface:
                 self.argMaps[constParser.arg] = constParser.value
 
     def checkResult(self, clazzName, methodName):
-        if not (self.searchBoxJavaBridge_flag and self.accessibility_flag and self.accessibility_flag):
-            VulnerabilityData.WebViewUnremovedInterface.add(formatClassAndMethod(clazzName, methodName))
+        if self.isRemoveJavascriptInterface:
+            if not (self.searchBoxJavaBridge_flag and self.accessibility_flag and self.accessibility_flag):
+                self.vulnerabilityData.webviewUnremovedInterface.add(formatClassAndMethod(clazzName, methodName))
         self.searchBoxJavaBridge_flag = False
         self.accessibility_flag = False
         self.accessibilityTraversal_flag = False

@@ -5,9 +5,11 @@ parse smali file
 '''
 
 import logging
+import sys
+sys.path.append("H:\\MyGithub\\ApplicationSecurityCheck\\appdetection\\")
 
 
-from parent.item_WebviewIgnoreSSLVerify import WebviewIgnoreSSLVerify
+from item_WebviewIgnoreSSLVerify import WebviewIgnoreSSLVerify
 from item_HTTPSTrustAllHostname import HTTPSTrustAllHostname
 from item_NullCerVerify import NullCerVerify
 from item_HostnameNotVerify import HostnameNotVerify
@@ -24,6 +26,7 @@ from item_LocalDOS import LocalDOS
 from item_DynamicBroadcast import DynamicBroadcast
 
 from statementParser import InvokeParser, SgetParser, EndMethodParser
+from clazzAndMethodInfo import ClazzInfo, MethodInfo
 
 
 logging.basicConfig(
@@ -33,43 +36,34 @@ logging.basicConfig(
     datefmt='%Y-%m-%d, %H:%M:%S')
 
 
-class MethodInfo:
-    methodName = ''
-    methodArgs = ''
-    methodReturn = ''
-
-
-class ClazzInfo:
-    clazzName = ''
-    superClazz = ''
-    implements = ''
-    methodSet = set()
-
-
 class DetectItemsEntry:
 
-    clazzInfo = ClazzInfo()
-    methodInfo = MethodInfo()
 
-    invokeParser = InvokeParser()
-    sgetParser = SgetParser()
-    endMethodParser = EndMethodParser()
+    def __init__(self, vulnerabilityData):
+        self.vulnerabilityData = vulnerabilityData
 
-    webviewIgnoreSSLVerify = WebviewIgnoreSSLVerify()
-    hTTPSTrustAllHostname = HTTPSTrustAllHostname()
-    nullCerVerify = NullCerVerify()
-    hostnameNotVerify = HostnameNotVerify()
-    webviewUnremovedInterface = WebViewUnremovedInterface()
-    aesWeakEncrypt = AESWeakEncrypt()
-    webViewSavePasswordAndFileAccess = WebViewSavePasswordAndFileAccess()
-    sensiDataStorage = SensiDataStorage()
-    rsaWeakEncrypt = RSAWeakEncrypt()
-    unzipDirTraverse = UnzipDirTraverse()
-    dynamicLoadDex = DynamicLoadDex()
-    contentProviderDirTraverse = ContentProviderDirTraverse()
-    initIvParameterSpec = InitIvparameterSpec()
-    localDOS = LocalDOS()
-    dynamicBroadcast = DynamicBroadcast()
+        self.clazzInfo = ClazzInfo()
+        self.methodInfo = MethodInfo()
+
+        self.invokeParser = InvokeParser()
+        self.sgetParser = SgetParser()
+        self.endMethodParser = EndMethodParser()
+
+        self.webviewIgnoreSSLVerify = WebviewIgnoreSSLVerify(vulnerabilityData)
+        self.hTTPSTrustAllHostname = HTTPSTrustAllHostname(vulnerabilityData)
+        self.nullCerVerify = NullCerVerify(vulnerabilityData)
+        self.hostnameNotVerify = HostnameNotVerify(vulnerabilityData)
+        self.webviewUnremovedInterface = WebViewUnremovedInterface(vulnerabilityData)
+        self.aesWeakEncrypt = AESWeakEncrypt(vulnerabilityData)
+        self.webViewSavePasswordAndFileAccess = WebViewSavePasswordAndFileAccess(vulnerabilityData)
+        self.sensiDataStorage = SensiDataStorage(vulnerabilityData)
+        self.rsaWeakEncrypt = RSAWeakEncrypt(vulnerabilityData)
+        self.unzipDirTraverse = UnzipDirTraverse(vulnerabilityData)
+        self.dynamicLoadDex = DynamicLoadDex(vulnerabilityData)
+        self.contentProviderDirTraverse = ContentProviderDirTraverse(vulnerabilityData)
+        self.initIvParameterSpec = InitIvparameterSpec(vulnerabilityData)
+        self.localDOS = LocalDOS(vulnerabilityData)
+        self.dynamicBroadcast = DynamicBroadcast(vulnerabilityData)
 
     def parseSmaliFile(self, smaliLines):
         isMethod = False
@@ -77,16 +71,17 @@ class DetectItemsEntry:
             if line == '\n':
                 continue
             if line.startswith('.class'):
+                self.clazzInfo.implements = ''
                 temp = line.split(' ')
-                self.clazzInfo.className = temp[len(temp) - 1].split(';')[0]
+                self.clazzInfo.clazzName = temp[len(temp) - 1].split(';')[0]
                 logging.info('className: ' + self.clazzInfo.clazzName)
             elif line.startswith('.super'):
-                self.clazzInfo.superClazz = line - '.super '
+                self.clazzInfo.superClazz = line.replace('.super ', '')
             elif line.startswith('.implements '):
                 self.clazzInfo.implements = line.split(' ')[1]
             elif line.startswith('.method'):
                 isMethod = True
-                self.formateMethodInfo(line)
+                self.methodInfo.formateMethodInfo(line)
                 # HTTPS证书空校验
                 if self.methodInfo.methodName == 'checkServerTrusted' or self.methodInfo.methodName == 'checkClientTrusted':
                     self.nullCerVerify.checkMethod(self.clazzInfo)
@@ -95,7 +90,7 @@ class DetectItemsEntry:
                     self.hostnameNotVerify.checkMethod(self.clazzInfo)
                 
                 continue
-            elif line == '.end method':
+            elif '.end method' in line:
                 isMethod = False
                 self.endMethodParser.parse(line)
                 self.hTTPSTrustAllHostname.checkResult()
@@ -114,8 +109,10 @@ class DetectItemsEntry:
                 self.detect(line)
 
     def detect(self, statement):
+        if statement.startswith('    .locals') or statement.startswith('    .line'):
+            return
         # invoke语句, invoke-direct, invoke-virtual, invoke-static
-        if statement.startswith('invoke-'):
+        elif statement.startswith('    invoke-'):
             self.invokeParser.parse(statement)
             # WebView忽略SSL证书验证错误漏洞
             self.webviewIgnoreSSLVerify.checkInvoke(self.clazzInfo, self.methodInfo, self.invokeParser)
@@ -143,7 +140,7 @@ class DetectItemsEntry:
             self.localDOS.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
             # 动态注册广播暴露风险
             self.dynamicBroadcast.checkInvoke(self.clazzInfo.clazzName, self.methodInfo.methodName, self.invokeParser)
-        elif statement.startswith('sget-'):
+        elif statement.startswith('    sget-'):
             self.sgetParser.parse(statement)
             self.hTTPSTrustAllHostname.checkSget(self.sgetParser)
         else:
@@ -158,11 +155,3 @@ class DetectItemsEntry:
             self.initIvParameterSpec.checkConst(statement)
             self.dynamicBroadcast.checkConst(statement)
 
-    def formateMethodInfo(self, line):
-        lineTemp = line.split(' ')
-        methodStatement = lineTemp[len(lineTemp) - 1]
-        self.methodInfo.methodName = methodStatement.split('(')[0]
-        argAndReturn = methodStatement - self.methodInfo.methodName
-        temp = argAndReturn.subString(1).split(')')
-        self.methodInfo.methodArgs = temp[0]
-        self.methodInfo.methodReturn = temp[1].subString(0, temp[1].len - 1)

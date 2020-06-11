@@ -3,7 +3,9 @@
 import logging
 import os
 
-from parent.detectItemsEntry import DetectItemsEntry
+from detectItemsEntry import DetectItemsEntry
+from data_appBase import AppBaseData
+from data_vulnerability import VulnerabilityData
 
 logging.basicConfig(
     filename='app.log',
@@ -15,7 +17,7 @@ logging.basicConfig(
 smaliTrees = set()
 
 
-def smaliFilesEntry(dirPath):
+def smaliFilesEntry(dirPath, vulnerabilityData):
     for root, dirs, files in os.walk(dirPath):
         for dir in dirs:
             if (dir.startswith('smali')):
@@ -27,7 +29,7 @@ def smaliFilesEntry(dirPath):
                         if '/android' not in thisFilePath:
                             # logging.info('dir: ' + dir + '/' + file)
                             smaliLines = readSmaliFileByLine(thisFilePath)
-                            detectItems = DetectItemsEntry()
+                            detectItems = DetectItemsEntry(vulnerabilityData)
                             detectItems.parseSmaliFile(smaliLines)
             else:
                 continue
@@ -48,8 +50,13 @@ def readSmaliFileByLine(filePath):
 
 
 def main():
-    dirPath = "F:/testApks/58tongcheng"
-    smaliFilesEntry(dirPath)
+    dirPath = "F:/testApks/zhoumoqunaer"
+    vulnerabilityData = VulnerabilityData()
+    smaliFilesEntry(dirPath, vulnerabilityData)
+    # appBaseDataDict = AppBaseData.outputAppBaseData()
+    vulnerabilityDataDict = vulnerabilityData.outputVulnerabilityData()
+    # logging.info('appBaseInfo: ' + str(appBaseDataDict))
+    logging.info('vulnerabilityData: ' + str(vulnerabilityDataDict))
 
 
 if __name__ == "__main__":

@@ -12,6 +12,9 @@ from statementParser import ConstParser, ReturnParser
 
 class HostnameNotVerify:
 
+    def __init__(self, vulnerabilityData):
+        self.vulnerabilityData = vulnerabilityData
+
     isHostNameVerifyMethod = False
     isConst = False
     
@@ -31,7 +34,7 @@ class HostnameNotVerify:
                     returnParser = ReturnParser()
                     returnParser.parse(statement)
                     if returnParser.value == self.constParser.arg and '0x1' in self.constParser.value:
-                        VulnerabilityData.hostnameNotVerify.add(formatClassAndMethod(clazzName, methodName))
+                        self.vulnerabilityData.hostnameNotVerify.add(formatClassAndMethod(clazzName, methodName))
                         self.isConst = False
                         self.isHostNameVerifyMethod = False
                         self.constParser = ConstParser()

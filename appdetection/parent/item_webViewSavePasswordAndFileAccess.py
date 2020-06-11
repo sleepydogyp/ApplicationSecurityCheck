@@ -13,6 +13,9 @@ from statementParser import ConstParser, InvokeParser
 
 class WebViewSavePasswordAndFileAccess:
 
+    def __init__(self, vulnerabilityData):
+        self.vulnerabilityData = vulnerabilityData
+
     constMap = dict()
     isSetSavePassWordFalse = False
     isFileAccess = False
@@ -31,16 +34,13 @@ class WebViewSavePasswordAndFileAccess:
         if statement.startswith('const'):
             constParser = ConstParser()
             constParser.parse(statement)
-            if constParser.arg in self.constMap:
-                self.constMap[constParser.arg] = constParser.value
-            else:
-                self.constMap[constParser.arg] = self[constParser.value]
+            self.constMap[constParser.arg] = constParser.value
 
     def checkResult(self, clazzName, methodName):
         if not self.isSetSavePassWordFalse:
-            VulnerabilityData.webViewSavePassword.add()
+            self.vulnerabilityData.webViewSavePassword.add(formatClassAndMethod(clazzName, methodName))
         if self.isFileAccess:
-            VulnerabilityData.webViewFileAccess.add(formatClassAndMethod(clazzName, methodName))
+            self.vulnerabilityData.webViewFileAccess.add(formatClassAndMethod(clazzName, methodName))
         self.constMap.clear()
         self.isSetSavePassWordFalse = False
         self.isFileAccess = False

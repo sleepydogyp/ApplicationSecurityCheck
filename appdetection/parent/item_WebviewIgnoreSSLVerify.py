@@ -7,19 +7,14 @@ WebView忽略SSL证书验证错误漏洞
 
 from parent.data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
-from detectItemsEntry import MethodInfo, ClazzInfo
+from clazzAndMethodInfo import MethodInfo, ClazzInfo
 from statementParser import InvokeParser
-
-import logging
-
-logging.basicConfig(
-    filename='app.log',
-    encoding='utf-8',
-    format='%(asctime)s %(filename)s[line:%(lineno)d] %(message)s',
-    datefmt='%Y-%m-%d, %H:%M:%S')
 
 
 class WebviewIgnoreSSLVerify:
+
+    def __init__(self, vulnerabilityData):
+        self.vulnerabilityData = vulnerabilityData
 
     def checkInvoke(self, clazzInfo, methodInfo, invokeParser):
         methodName = methodInfo.methodName
@@ -29,7 +24,7 @@ class WebviewIgnoreSSLVerify:
             return
         if methodName == 'onReceivedSslError' and methodArgs == 'Landroid/webkit/WebView;Landroid/webkit/SslErrorHandler;Landroid/net/http/SslError;' and methodReturn == 'V':
             if invokeParser.operation == 'invoke-virtual' and invokeParser.body == 'Landroid/webkit/SslErrorHandler;->proceed()V':
-                VulnerabilityData.WebviewIgnoreSSLVerify.add(formatClassAndMethod(clazzInfo.clazzName, methodName))
+                self.vulnerabilityData.webviewIgnoreSSLVerify.add(formatClassAndMethod(clazzInfo.clazzName, methodName))
 
 
 

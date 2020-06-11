@@ -5,10 +5,13 @@ HTTPS证书空校验
 '''
 from parent.data_vulnerability import VulnerabilityData
 from formatClassAndMethod import formatClassAndMethod
-from detecctItemsEntry import ClazzInfo
+from clazzAndMethodInfo import ClazzInfo
 
 
 class NullCerVerify:
+
+    def __init__(self, vulnerabilityData):
+        self.vulnerabilityData = vulnerabilityData
 
     isCerVerifyMethod = False
     isLineNum = False
@@ -31,7 +34,7 @@ class NullCerVerify:
     # .end method
     def checkResult(self, clazzInfo, methodName):
         if self.isMethodNull and self.isLineNum:
-            VulnerabilityData.nullCerVerify.add(formatClassAndMethod(clazzInfo.clazzName, methodName))
+            self.vulnerabilityData.nullCerVerify.add(formatClassAndMethod(clazzInfo.clazzName, methodName))
         self.isLineNum = False
         self.isMethodNull = False
         self.isCerVerifyMethod = False
