@@ -22,4 +22,4 @@ def overviewManager(dirPath, appBaseData):
     parseBaseInfos(dirPath + '.apk', appBaseData)
 
     # 3. is debug cer or release cer
-    parseCert(dirPath + '.apk', appBaseData)
+    parseCert(dirPath, appBaseData)

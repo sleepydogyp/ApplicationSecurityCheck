@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 
 import logging
+import shutil
 
 from commands import decompileApk
 from overviewController import overviewManager
@@ -27,22 +28,28 @@ class DetectEntry:
             appBaseData = AppBaseData()
             vulnerabilityData = VulnerabilityData()
 
-            # decompileApk(self.path)
+            # 1. decompile apk
             dirPath = self.path.split('.apk')[0]
+            decompileApk(self.path, dirPath)
 
-            # 1. overview
+            # 2. overview
             overView = overviewManager(dirPath, appBaseData)
-            logging.info('overViewInfo: ' + overView)
-            # 2. vulnerability scan of smali
-            
+
+            # 3. vulnerability scan of smali
             smaliFilesEntry(dirPath, vulnerabilityData)
 
             # TODO: analysis between methods; 
-            # 3. get data
+            # 4. get data
             appBaseDataDict = appBaseData.outputAppBaseData()
             vulnerabilityDataDict = vulnerabilityData.outputVulnerabilityData()
             logging.info('appBaseInfo: ' + str(appBaseDataDict))
             logging.info('vulnerabilityData: ' + str(vulnerabilityDataDict))
+
+            # 5. delete temp dir
+            shutil.rmtree(dirPath)
+            shutil.rmtree(dirPath + '_upzip')
+
+            
 
 
 def main():
